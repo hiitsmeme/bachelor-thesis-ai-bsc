@@ -1,0 +1,16 @@
+[
+    {
+        "Delta-AUC-PR per task": [
+            0.09163491725921631
+        ],
+        "ROC-AUC per task": [
+            0.536
+        ],
+        "Sd-Delta-AUC-PR per task": [
+            0.1423151646599968
+        ],
+        "Sd-ROC-AUC per task": [
+            0.16316862443496913
+        ]
+    }
+]

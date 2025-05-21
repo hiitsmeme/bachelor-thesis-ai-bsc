@@ -1,0 +1,29 @@
+für finetuning: entweder letzte layer weg und neue drauf oder nur neuer layer drauf, andere layers sind frozen-> schauen wies in paper is
+
+neue daten: fünf aktive fünf inaktive pro task
+
+mit und ohne embedding propagation
+
+hyperparameter: Epochen, early stopping, learning rate, feature propagation: alpha
+
+4 validation tasks und 4 test tasks
+pretrained model auf 9 tasks
+hp auf 1. 4 tasks lernen -> aber alles vergessen von validation set
+dann final einmal trainieren auf 4 test tasks
+
+beide finetuning sets in train und test set gesplittet: 5 aktive & 5 inaktive train, rest test -> schauen wies im paper is: n classes randomly gesampled without replacement; support set has k examples; query set has q examples:
+In the episodic fine-tuning stage we randomly sample 5 classes per episode,
+where in each class k instances are selected for the support set and 15 for the
+query set. meistens 1shot und 5shot
+
+behalten sie extractor ganz im paper oder letzte layer weg? -> paper: The second classifier is identical to the Wl-based classifier used in pretraining.
+
+neue layer: 1 output neuron, pro finetuning task neu trainiert
+
+embedding propagation is applied to support and query set together
+
+inference phase is :
+1. label propagation: embedding propagation and all samples that dont have a label are argmaxed based on the propagator matrix; should we do threshold? because we have multiple labels possible; softmax on query set logits
+2. ist cross entropy loss vom nn
+
+
