@@ -27,3 +27,8 @@ inference phase is :
 2. ist cross entropy loss vom nn
 
 
+- hyperparameter tuning mit sweep (create new notebooks for that)
+- task idx random gesampled -> nd getuned -> soll auf alle tasks funktionieren
+- fix per task logging issue -> only train on one task but need to concatenate in the end
+
+

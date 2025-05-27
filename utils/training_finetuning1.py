@@ -9,6 +9,34 @@ import warnings
 import pandas as pd
 import json
 
+# function to calculate embeddings for model input
+def embedding_propagation(X, alpha):
+    # squared distances
+    sq = torch.sum(X ** 2, dim=1, keepdim=True)  # shape: (num_samples, 1)
+    distances_squared = sq + sq.t() - 2 * (X @ X.t())
+    
+    # adjacency matrix
+    sigma2 = torch.var(distances_squared)
+    A = torch.exp(-distances_squared / sigma2)
+    A.fill_diagonal_(0)
+    
+    # diagonal matrix
+    row_sums = torch.sum(A, dim=1)
+    D12 = torch.diag(1 / torch.sqrt(row_sums))
+    
+    # laplacian matrix
+    L = D12 @ A @ D12
+    
+    # propagator matrix
+    num_samples = X.shape[0]
+    I = torch.eye(num_samples, device=X.device, dtype=X.dtype)
+    P = torch.inverse(I - alpha * L)
+    
+    # final embeddings
+    X_final = P @ X
+    
+    return X_final
+
 
 def make_support_query(X, y, task_idx, k=1, l=None, max_pos_query=5, random_state=None):
     """
@@ -82,8 +110,40 @@ def get_support_query_loaders(X, y, task_idx, k, l, max_pos_query, seed, batch_s
     (Xs, ys), (Xq, yq), support_idx, query_idx = make_support_query(X, y, task_idx, k=k, l=l, max_pos_query=max_pos_query, random_state=seed)
 
     # datasets
-    support_dataset = TensorDataset(torch.tensor(Xs, dtype=torch.float32), torch.tensor(ys, dtype=torch.float32))
-    query_dataset = TensorDataset(torch.tensor(Xq, dtype=torch.float32),torch.tensor(yq, dtype=torch.float32))
+    support_dataset = TensorDataset(Xs, ys)
+    query_dataset = TensorDataset(Xq, yq)
+
+    # dataloaders
+    support_loader = DataLoader(support_dataset,batch_size=batch_size,shuffle=True,worker_init_fn=worker_init_fn,num_workers=num_workers)
+    query_loader = DataLoader(query_dataset,batch_size=batch_size,shuffle=True,worker_init_fn=worker_init_fn,num_workers=num_workers)
+
+    return support_loader, query_loader, support_idx, query_idx
+
+
+def get_support_query_loaders_ep(X, y, alpha, task_idx, k, l, max_pos_query, seed, batch_size=120, num_workers=0):
+    """
+    Splits X,y into support/query for task `task_idx` with k positives & negatives each,
+    then wraps each in a DataLoader with the same style as get_datasets.
+    """
+    def worker_init_fn(worker_id):
+        # ensure different RNG streams per worker
+        np.random.seed(seed + worker_id)
+        random.seed(seed + worker_id)
+
+    # support query sets
+    (Xs, ys), (Xq, yq), support_idx, query_idx = make_support_query(X, y, task_idx, k=k, l=l, max_pos_query=max_pos_query, random_state=seed)
+
+    # embed support and query set together
+    old_length = (len(Xs), len(Xq))
+    X_together = torch.vstack((Xs, Xq))
+    X_embedded_together = embedding_propagation(X_together, alpha)
+    Xs = X_embedded_together[:len(Xs)]
+    Xq = X_embedded_together[len(Xs):]
+    assert (len(Xs), len(Xq)) == old_length
+
+    # datasets
+    support_dataset = TensorDataset(Xs, ys)
+    query_dataset = TensorDataset(Xq, yq)
 
     # dataloaders
     support_loader = DataLoader(support_dataset,batch_size=batch_size,shuffle=True,worker_init_fn=worker_init_fn,num_workers=num_workers)
