@@ -48,7 +48,10 @@ def make_support_query(X, y, task_idx, k=1, l=None, max_pos_query=5, random_stat
         query_set_ np.array with labels
     """
     rng    = np.random.default_rng(random_state)
-    labels = y[:, task_idx].cpu()
+    if not isinstance(y, np.ndarray):
+        labels = y[:, task_idx].cpu()
+    else:
+        labels = y[:, task_idx]
 
     # --- SUPPORT SET --- #
     pos_idx = np.where(labels == 1)[0]
@@ -120,7 +123,7 @@ def get_support_query_loaders(X, y, task_idx, k, l, max_pos_query, seed, batch_s
     return support_loader, query_loader, support_idx, query_idx
 
 
-def get_support_query_loaders_ep(X, y, alpha, task_idx, k, l, max_pos_query, seed, batch_size=120, num_workers=0):
+def get_support_query_loaders_ep(X, y, alpha, task_idx, k, l, max_pos_query, seed, batch_size, num_workers=0):
     """
     Splits X,y into support/query for task `task_idx` with k positives & negatives each,
     then wraps each in a DataLoader with the same style as get_datasets.
@@ -185,12 +188,6 @@ def getPrAucIndividualClassFinetuning(train_or_val, all_labels, all_preds, write
         pr_auc = auc(recall, precision) - baseline # computes delta auc-pr
         all_pr_auc.append(pr_auc)
         all_roc_auc.append(roc_auc)
-
-        # used for logging to tensorboard
-        # writer.add_pr_curve(f"{train_or_val} Precision-Recall Class {class_idx}", class_labels, class_preds, epoch)
-        # writer.add_scalar(f"{train_or_val} PR-AUC Delta Class {class_idx}", pr_auc, epoch)
-        # writer.add_scalar(f"{train_or_val} ROC-AUC Class {class_idx}", roc_auc, epoch)
-        
     # return metrics averaged over tasks and not averaged over tasks
     return np.mean(np.array(all_pr_auc)), np.mean(np.array(all_roc_auc)), np.array(all_pr_auc), np.array(all_roc_auc)
 
@@ -202,6 +199,7 @@ def classification_loss(model_outputs, targets):
     return classifier_loss
 
 def propagation_loss(label_propagation_query_set_outputs, targets):
+    print(label_propagation_query_set_outputs.shape, targets.shape)
     mask = ~torch.isnan(targets)  # Create a mask where values are NOT NaN
     label_propagation_query_set_loss = nn.functional.binary_cross_entropy_with_logits(label_propagation_query_set_outputs[mask], targets[mask])  # Compute loss only on valid labels
     return label_propagation_query_set_loss

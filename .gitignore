@@ -1,3 +1,5 @@
 data/data_scaled.npz
 best_model.pth
 BachelorArbeitTasks.txt
+wandb
+hp_tryout_vanilly_results.txt

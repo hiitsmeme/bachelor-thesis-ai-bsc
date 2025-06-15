@@ -32,3 +32,48 @@ inference phase is :
 - fix per task logging issue -> only train on one task but need to concatenate in the end
 
 
+
+
+
+
+TODO:
+- use only support set for training, evaluate on query set, do that for five episodes, for every tasks
+- label propagation nicht im loss, sondern quasi als ensemble approach -> average von model prediciton und label prop prediction
+
+train: nur support loss
+eval: prediction model + prediction label prop sind die final preds für die ich metriken ausrechne
+
+ich sample nur einmal am Anfang support und query set für alle episoden, 
+kann aber 10 mal oder so trainieren mit diff support set und diff seed aber selbe config
+
+bei ft2:
+-> exakt wie auf ft1 trainieren: num episoden etc. 
+-> aber pro task wieder mehrmals trianieren möglich: 10x ca
+
+
+
+
+
+
+
+
+
+
+Bachelor Arbeit schreiben:
+Neue Section:
+->2 Problem setting and Research question: auch über seupport query set reden hier, ep vorher introducen
+
+Related work:
+->label propagation und ep umdrehen?
+->molecular representation und SMILES eine davon, muss man gucken
+-> (multitask & transfer learning eher zu few-shot dazu eher nd)
+-> emphasize lack of ep in problem setting oder ende introduction nd hier
+
+Methode:
+-> Architektur als Unterpunkt
+-> Trainingsprocedure als Unterpunkt
+
+Experiments:
+-> practical work entweder als vorexperiment ist der classifier überhaupt gut 
+
+Discussion und Result: practical work weg

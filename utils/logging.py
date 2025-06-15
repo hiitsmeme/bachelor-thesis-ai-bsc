@@ -136,6 +136,74 @@ def log_results_nn(avg_results, all_results, filepath_normal, filepath_per_run, 
         json.dump(final_results_per_run, f, indent=4)
 
 
+def log_results_nn_ft(all_results, filepath_normal, filepath_per_run, filepath_per_task):
+    # rows: runs; cols: tasks
+    delta_auc_pr_matrix = np.array(all_results["Delta-AUC-PR"]).reshape(4,-1).T
+    roc_auc_matrix = np.array(all_results["ROC-AUC"]).reshape(4,-1).T
+    # -------- Delta AUC PR ---------- # 
+    # compute mean, sd per tasks
+    delta_auc_pr_mean_tasks = np.mean(delta_auc_pr_matrix, axis=0)
+    delta_auc_pr_sd_tasks = np.std(delta_auc_pr_matrix, axis=0)
+
+    # compute mean, sd per runs
+    delta_auc_pr_mean_runs = np.mean(delta_auc_pr_matrix, axis=1)
+    delta_auc_pr_sd_runs = np.std(delta_auc_pr_matrix, axis=1)
+
+    # compute mean, sd overall
+    delta_auc_pr_mean_overall = np.mean(delta_auc_pr_matrix)
+    delta_auc_pr_sd_overall = np.std(delta_auc_pr_matrix)
+
+    # -------- ROC AUC ---------- # 
+    # compute mean, sd per tasks
+    roc_auc_mean_tasks = np.mean(roc_auc_matrix, axis=0)
+    roc_auc_sd_tasks = np.std(roc_auc_matrix, axis=0)
+
+    # compute mean, sd per runs
+    roc_auc_mean_runs = np.mean(roc_auc_matrix, axis=1)
+    roc_auc_sd_runs = np.std(roc_auc_matrix, axis=1)
+
+    # compute mean, sd overall
+    roc_auc_mean_overall = np.mean(roc_auc_matrix)
+    rpc_auc_sd_overall = np.std(roc_auc_matrix)
+
+    # save in json convertible format
+    final_results = [{
+        "Delta-AUC-PR": float(delta_auc_pr_mean_overall),
+        "ROC-AUC": float(roc_auc_mean_overall),
+        "Sd-Delta-AUC-PR": float(delta_auc_pr_sd_overall),
+        "Sd-ROC-AUC": float(rpc_auc_sd_overall)
+    }]
+
+    # save to json file
+    with open(filepath_normal, "w") as f:
+        json.dump(final_results, f, indent=4)
+
+    # save in json convertible format
+    final_results_per_task = [{
+        "Delta-AUC-PR per task": delta_auc_pr_mean_tasks.tolist(),
+        "ROC-AUC per task": roc_auc_mean_tasks.tolist(),
+        "Sd-Delta-AUC-PR per task": delta_auc_pr_sd_tasks.tolist(),
+        "Sd-ROC-AUC per task": roc_auc_sd_tasks.tolist()
+    }]
+
+    # write to json file
+    with open(filepath_per_task, "w") as f:
+        json.dump(final_results_per_task, f, indent=4)
+
+
+    # save in json convertible format
+    final_results_per_run = [{
+        "Delta-AUC-PR per run": delta_auc_pr_mean_runs.tolist(),
+        "ROC-AUC per run": roc_auc_mean_runs.tolist(),
+        "Sd-Delta-AUC-PR per run": delta_auc_pr_sd_runs.tolist(),
+        "Sd-ROC-AUC per run": roc_auc_sd_runs.tolist()
+    }]
+
+    # write to json file
+    with open(filepath_per_run, "w") as f:
+        json.dump(final_results_per_run, f, indent=4)
+
+
 def save_best_model(model, avg_pr_auc, best_score, file_path):
     # Check if the current average PR AUC is better than the best recorded score
     if avg_pr_auc > best_score:
