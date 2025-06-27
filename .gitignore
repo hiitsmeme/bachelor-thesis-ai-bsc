@@ -3,3 +3,6 @@ best_model.pth
 BachelorArbeitTasks.txt
 wandb
 hp_tryout_vanilly_results.txt
+finetuning1_notebooks
+.venv
+__pycache__

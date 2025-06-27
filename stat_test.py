@@ -11,9 +11,9 @@ def load_scores_from_json(file_path, metric_key):
     return np.array(data[0][metric_key])
 
 # File paths for the two models' JSON files
-baseline_file = "./metrics/metrics_baseline_per_run.json"
-mlp_file = "./metrics/metrics_pretraining_per_run.json"
-mlp_ep_file = "./metrics/metrics_pretraining_ep_per_run.json"
+baseline_file = "./metrics/metrics_baseline_ft2_per_run.json"
+mlp_file = "./metrics/vanilla_ft2_per_run.json"
+mlp_ep_file = "./metrics/ep_ft2_per_run.json"
 
 
 def perform_tests(metric):
